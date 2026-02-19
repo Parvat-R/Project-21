@@ -12,17 +12,29 @@ export async function GET(
 ) {
   try {
 
-    const userId : string= params.id;
+    const eventId : string= params.id;
 
     const feedbacks = await prisma.feedback.findMany({
       where: {
         registration: {
-          userId: userId, 
+          eventId: eventId, 
         },
       },
+
       include: {
-        registration: true, 
+        registration: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+              },
+            },
+          },
+        },
       },
+      
       orderBy: {
         id: "desc",
       },
@@ -35,7 +47,7 @@ export async function GET(
     );
 
   } catch (error) {
-    console.error("[GET /api/feedback/user/[id]]", error);
+    console.error("[GET /api/feedback/event/[id]]", error);
 
     return NextResponse.json(
       { success: false, message: "Internal server error" },

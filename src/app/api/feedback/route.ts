@@ -1,19 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import { PrismaClient } from "@/app/generated/prisma/client"; 
-import { PrismaPg } from "@prisma/adapter-pg"; 
+import z from "zod";
 
-
-const globalForPrisma = global as unknown as {
-  prisma: PrismaClient; 
-}; 
-
-const adapter = new PrismaPg({
-  connectionString: process.env.DATABASE_URL, 
-}); 
-
-
-
+const createFeedbackSchema = z.object({
+  id: z.string().cuid(),
+  registrationId: z.string().cuid(),
+  description: z.string().max(500, "Description must be at most 500 characters."),
+  stars: z.number().min(1, "Rating must be at least 1 star.").max(5, "Rating cannot exceed 5 stars.")
+});
 
 export async function POST(req: NextRequest) {
   try {
