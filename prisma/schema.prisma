@@ -13,7 +13,6 @@ datasource db {
   provider = "postgresql"
 }
 
-
 enum Role {
   USER
   ADMIN
@@ -46,13 +45,13 @@ enum ModStatus {
 }
 
 model User {
-  id            String    @id @default(cuid())
+  id            String         @id @default(cuid())
   name          String
-  email         String    @unique
+  email         String         @unique
   password      String
-  role          Role      @default(USER)
-  dateOfJoin    DateTime  @default(now())
-  walletBalance Decimal   @default(0) @db.Decimal(10, 2)
+  role          Role           @default(USER)
+  dateOfJoin    DateTime       @default(now())
+  walletBalance Decimal        @default(0) @db.Decimal(10, 2)
 
   events        Event[]
   registrations Registration[]
@@ -76,7 +75,8 @@ model Event {
   amount         Decimal        @db.Decimal(10, 2)
   visibility     Visibility     @default(PUBLIC)
 
-  creator       User           @relation(fields: [creatorId], references: [id])
+  // If a User is deleted, delete all their events too
+  creator       User           @relation(fields: [creatorId], references: [id], onDelete: Cascade)
   registrations Registration[]
   payments      Payment[]
   mods          EventMod[]
@@ -92,8 +92,9 @@ model Registration {
   attendance     Boolean   @default(false)
   attendanceTime DateTime?
 
-  user     User      @relation(fields: [userId], references: [id])
-  event    Event     @relation(fields: [eventId], references: [id])
+  // If a User or Event is deleted, delete their registrations too
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  event    Event     @relation(fields: [eventId], references: [id], onDelete: Cascade)
   payment  Payment?
   feedback Feedback?
 
@@ -110,9 +111,10 @@ model Payment {
   status         PaymentStatus @default(PENDING)
   amount         Decimal       @db.Decimal(10, 2)
 
-  user         User         @relation(fields: [userId], references: [id])
-  registration Registration @relation(fields: [registrationId], references: [id])
-  event        Event        @relation(fields: [eventId], references: [id])
+  // If any parent is deleted, delete the payment record too
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  registration Registration @relation(fields: [registrationId], references: [id], onDelete: Cascade)
+  event        Event        @relation(fields: [eventId], references: [id], onDelete: Cascade)
 
   @@map("payments")
 }
@@ -133,7 +135,8 @@ model Feedback {
   description    String
   stars          Int
 
-  registration Registration @relation(fields: [registrationId], references: [id])
+  // If a Registration is deleted, delete its feedback too
+  registration Registration @relation(fields: [registrationId], references: [id], onDelete: Cascade)
 
   @@map("feedbacks")
 }
@@ -146,7 +149,8 @@ model EventMod {
   appliedOn  DateTime  @default(now())
   responseOn DateTime?
 
-  event Event @relation(fields: [eventId], references: [id])
+  // If an Event is deleted, delete its mod requests too
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
 
   @@map("event_mods")
 }
