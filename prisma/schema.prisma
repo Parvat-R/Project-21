@@ -1,0 +1,152 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+
+enum Role {
+  USER
+  ADMIN
+  ORGANISER
+}
+
+enum ApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum Visibility {
+  INTERNAL
+  PUBLIC
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCESS
+  FAILED
+  REFUNDED
+}
+
+enum ModStatus {
+  OPEN
+  UNDER_REVIEW
+  RESOLVED
+  CLOSED
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String
+  email         String    @unique
+  password      String
+  role          Role      @default(USER)
+  dateOfJoin    DateTime  @default(now())
+  walletBalance Decimal   @default(0) @db.Decimal(10, 2)
+
+  events        Event[]
+  registrations Registration[]
+  payments      Payment[]
+
+  @@map("users")
+}
+
+model Event {
+  id             String         @id @default(cuid())
+  creatorId      String
+  slug           String         @unique
+  title          String
+  description    String
+  approvalStatus ApprovalStatus @default(PENDING)
+  createdOn      DateTime       @default(now())
+  startDatetime  DateTime
+  endDatetime    DateTime
+  imageData      Bytes?
+  seats          Int
+  amount         Decimal        @db.Decimal(10, 2)
+  visibility     Visibility     @default(PUBLIC)
+
+  creator       User           @relation(fields: [creatorId], references: [id])
+  registrations Registration[]
+  payments      Payment[]
+  mods          EventMod[]
+
+  @@map("events")
+}
+
+model Registration {
+  id             String    @id @default(cuid())
+  userId         String
+  eventId        String
+  registeredTime DateTime  @default(now())
+  attendance     Boolean   @default(false)
+  attendanceTime DateTime?
+
+  user     User      @relation(fields: [userId], references: [id])
+  event    Event     @relation(fields: [eventId], references: [id])
+  payment  Payment?
+  feedback Feedback?
+
+  @@unique([userId, eventId])
+  @@map("registrations")
+}
+
+model Payment {
+  id             String        @id @default(cuid())
+  userId         String
+  paymentId      String        @unique
+  registrationId String        @unique
+  eventId        String
+  status         PaymentStatus @default(PENDING)
+  amount         Decimal       @db.Decimal(10, 2)
+
+  user         User         @relation(fields: [userId], references: [id])
+  registration Registration @relation(fields: [registrationId], references: [id])
+  event        Event        @relation(fields: [eventId], references: [id])
+
+  @@map("payments")
+}
+
+model OtpVerification {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  otp       String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@map("otp_verifications")
+}
+
+model Feedback {
+  id             String @id @default(cuid())
+  registrationId String @unique
+  description    String
+  stars          Int
+
+  registration Registration @relation(fields: [registrationId], references: [id])
+
+  @@map("feedbacks")
+}
+
+model EventMod {
+  id         String    @id @default(cuid())
+  eventId    String
+  status     ModStatus @default(OPEN)
+  comments   String?
+  appliedOn  DateTime  @default(now())
+  responseOn DateTime?
+
+  event Event @relation(fields: [eventId], references: [id])
+
+  @@map("event_mods")
+}
