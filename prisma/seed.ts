@@ -47,6 +47,7 @@ export async function main() {
   for (const u of userData) {
     await prisma.user.create({ data: u });
   }
+  console.log( await prisma.user.findMany() )
 }
 
 main();
