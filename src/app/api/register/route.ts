@@ -1,6 +1,6 @@
 import prisma from "@/lib/prisma";
+import z from "zod";
 
-prisma
 
 export async function GET() {
     const data = await prisma.registration.findMany();
