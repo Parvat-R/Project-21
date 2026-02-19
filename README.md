@@ -36,7 +36,7 @@ Registration
 
 Payment
 - id
-- userId
+- userId FK
 - paymentId
 - regestrationId
 - eventId
