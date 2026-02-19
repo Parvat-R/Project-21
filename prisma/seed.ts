@@ -1,4 +1,4 @@
-import prisma from "../lib/prisma";
+import prisma from "../src/lib/prisma";
 
 export async function main() {
   console.log( await prisma.user.findMany() )

@@ -1,4 +1,6 @@
-import { prisma } from "@/lib/prisma";
+import prisma from "@/lib/prisma";
+
+prisma
 
 export async function GET() {
     const data = await prisma.registration.findMany();
