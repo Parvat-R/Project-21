@@ -22,27 +22,18 @@ export const NEXT_AUTH_CONFIG = {
       },
       async authorize(credentials: any) {
         const { email, password } = credentials;
-        console.log("Received credentials:", { email, password });
-
-        // Mock user for demonstration
-        const user = {
-          id: "1",
-          name: "John Doe",
-          email: email,
-        };
-        const usr = await prisma.user.findMany({});
-        console.log("Users in database:", usr);
-        // if (!email || !password) {
-        //   return null;
-        // }
-        // const user = await prisma.user.findUnique({
-        //   where: {
-        //     email: email,
-        //   },
-        // });
-        // if (!user) {
-        //   return null;
-        // }
+        // console.log("Received credentials:", { email });
+        if (!email || !password) {
+          return null;
+        }
+        const user = await prisma.user.findUnique({
+          where: {
+            email: email,
+          },
+        });
+        if (!user) {
+          return null;
+        }
         return {
           id: user.id,
           name: user.name,
