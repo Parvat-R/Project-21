@@ -1,7 +1,4 @@
 import prisma from "@/lib/prisma";
-import { NextRequest } from "next/server";
-import { includes, string } from "zod";
-import { ca } from "zod/locales";
 
 
 interface Register{
@@ -29,12 +26,12 @@ export async function POST(request: Request,{ params }: { params: { id: string }
     const { id: eventId } = await params
     console.log(body.userId)
     console.log(eventId)
-    // await prisma.registration.create({
-    //     data:{
-    //             userId : body.userId,
-    //             eventId : eventId
-    //     }
-    // })
+    await prisma.registration.create({
+        data:{
+                userId : body.userId,
+                eventId : eventId
+        }
+    })
     return Response.json({message : "Registered Successfully",acknowledgement : true})
     }
     catch(error){
@@ -49,17 +46,14 @@ export async function DELETE(request: Request,{ params }: { params: { id: string
     const { id: eventId } = await params
     console.log(body.id)
     console.log(eventId)
-    await prisma.payment.deleteMany({
-        where:{
-            registrationId : body.id
-        }
-    })
+
     const deleted = await prisma.registration.deleteMany({
         where:{
             id : body.id,
             eventId : eventId
         }
     })
+    
     if(deleted.count === 0){
         return Response.json({message : "Registration not found",acknowledgement : false}, {status: 404})
     }
