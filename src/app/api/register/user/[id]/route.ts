@@ -1,10 +1,5 @@
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
-import z from "zod";
-
-const userIdSchema = z.object({
-    id: z.string().uuid(),
-});
 
 // GET /api/register/user/[id] - Get all registrations for a user
 export async function GET(req:Request,{ params }: { params: { id: string } }) {

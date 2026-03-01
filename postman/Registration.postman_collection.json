@@ -1,0 +1,172 @@
+{
+  "info": {
+    "name": "Registration Module",
+    "_postman_id": "register-module-collection",
+    "description": "All endpoints for the Registration module of Project 21",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "registration_id",
+      "value": "REPLACE_WITH_REGISTRATION_ID",
+      "type": "string"
+    },
+    {
+      "key": "event_id",
+      "value": "REPLACE_WITH_EVENT_ID",
+      "type": "string"
+    },
+    {
+      "key": "user_id",
+      "value": "REPLACE_WITH_USER_ID",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Get All Registrations",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/register",
+          "host": ["{{base_url}}"],
+          "path": ["api", "register"]
+        },
+        "description": "Returns all registrations in the system."
+      },
+      "response": []
+    },
+    {
+      "name": "Get Registration by ID",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/register/{{registration_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["api", "register", "{{registration_id}}"]
+        },
+        "description": "Returns a single registration by its ID."
+      },
+      "response": []
+    },
+    {
+      "name": "Toggle Attendance",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"attendance\": true\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/api/register/{{registration_id}}/attendance",
+          "host": ["{{base_url}}"],
+          "path": ["api", "register", "{{registration_id}}", "attendance"]
+        },
+        "description": "Marks attendance true or false for a registration. Also sets attendanceTime when marking true."
+      },
+      "response": []
+    },
+    {
+      "name": "Get All Registrations for an Event",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/register/event/{{event_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["api", "register", "event", "{{event_id}}"]
+        },
+        "description": "Returns all registrations (with user details) for a specific event."
+      },
+      "response": []
+    },
+    {
+      "name": "Register User for an Event",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"userId\": \"REPLACE_WITH_USER_ID\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/api/register/event/{{event_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["api", "register", "event", "{{event_id}}"]
+        },
+        "description": "Creates a new registration for a user in a specific event. Returns 409 if already registered, 404 if event not found."
+      },
+      "response": []
+    },
+    {
+      "name": "Deregister User from an Event",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"id\": \"REPLACE_WITH_REGISTRATION_ID\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/api/register/event/{{event_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["api", "register", "event", "{{event_id}}"]
+        },
+        "description": "Deletes a specific registration (by registration id) from an event."
+      },
+      "response": []
+    },
+    {
+      "name": "Get All Registrations by User",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/register/user/{{user_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["api", "register", "user", "{{user_id}}"]
+        },
+        "description": "Returns all events registered by a specific user."
+      },
+      "response": []
+    }
+  ]
+}
