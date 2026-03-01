@@ -1,26 +1,32 @@
 import prisma from "@/lib/prisma";
+import { NextResponse } from "next/server";
+import z from "zod";
 
+const userIdSchema = z.object({
+    id: z.string().uuid(),
+});
 
+// GET /api/register/user/[id] - Get all registrations for a user
 export async function GET(req:Request,{ params }: { params: { id: string } }) {
     const { id } = await params
     console.log(id)
 
     try {
+
         const registration = await prisma.registration.findMany({
             where: { userId : id },
         });
 
         console.log(registration)
 
-        if (!registration) {
-            return new Response(JSON.stringify({ error: "Registration not found" }), {
-                status: 404,
-            });
+        if (!registration || registration.length === 0) {
+            return NextResponse.json({ error: "Registration not found" }, { status: 404 });
         }
 
-        return new Response(JSON.stringify(registration));
+        return NextResponse.json(registration);
+        
     } catch (error) {
-        return new Response(JSON.stringify({ error: "Internal server error" }), {
+        return NextResponse.json({ error: "Internal server error" }, {
             status: 500,
         });
     }
