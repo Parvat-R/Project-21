@@ -11,7 +11,7 @@ export const Appbar = () => {
   const [showLogin, setShowLogin] = useState(false);
   const [showSignup, setShowSignup] = useState(false);
 
-  if (status === "loading") return null;
+  // if (status === "loading") return null;
 
   return (
     <>
