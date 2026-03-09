@@ -33,7 +33,7 @@ stages:
     - script: dir
     - script: git branch
     - script: git remote
-    - script: git pull origin --no-rebase dev
+    - script: git pull origin --rebase dev
     - task: Docker@2
       displayName: Build and push an image to container registry
       inputs:
