@@ -1,6 +1,5 @@
 "use client";
 
-import { signOut, useSession } from "next-auth/react";
 import { useState } from "react";
 import LoginModal from "@/app/(auth)/signin/page";
 import SignupModal from "@/app/(auth)/signup/page";
