@@ -1,0 +1,194 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  USER
+  ADMIN
+  ORGANISER
+}
+
+enum ApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum Visibility {
+  INTERNAL
+  PUBLIC
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCESS
+  FAILED
+  REFUNDED
+}
+
+enum ModStatus {
+  OPEN
+  UNDER_REVIEW
+  RESOLVED
+  CLOSED
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String
+  email         String   @unique
+  emailVerified DateTime?
+  image         String?
+
+  password      String
+
+  role          Role      @default(USER)
+  dateOfJoin    DateTime  @default(now())
+  walletBalance Decimal   @default(0) @db.Decimal(10, 2)
+
+  events        Event[]
+  registrations Registration[]
+  payments      Payment[]
+
+  // accounts      Account[]
+  // sessions      Session[]
+
+  @@map("users")
+}
+
+// model Account {
+//   id                 String  @id @default(cuid())
+//   userId             String
+//   type               String
+//   provider           String
+//   providerAccountId  String
+//   refresh_token      String?
+//   access_token       String?
+//   expires_at         Int?
+//   token_type         String?
+//   scope              String?
+//   id_token           String?
+//   session_state      String?
+
+//   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+//   @@unique([provider, providerAccountId])
+//   @@map("accounts")
+
+// }
+
+// model Session {
+//   id           String   @id @default(cuid())
+//   sessionToken String   @unique
+//   userId       String
+//   expires      DateTime
+
+//   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+//   @@map("sessions")
+// }
+
+model Event {
+  id             String         @id @default(cuid())
+  creatorId      String
+  slug           String         @unique
+  title          String
+  description    String
+  approvalStatus ApprovalStatus @default(PENDING)
+  createdOn      DateTime       @default(now())
+  startDatetime  DateTime
+  endDatetime    DateTime
+  imageData      Bytes?
+  seats          Int
+  amount         Decimal        @db.Decimal(10, 2)
+  visibility     Visibility     @default(PUBLIC)
+
+  // If a User is deleted, delete all their events too
+  creator       User           @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  registrations Registration[]
+  payments      Payment[]
+  mods          EventMod[]
+
+  @@map("events")
+}
+
+model Registration {
+  id             String    @id @default(cuid())
+  userId         String
+  eventId        String
+  registeredTime DateTime  @default(now())
+  attendance     Boolean   @default(false)
+  attendanceTime DateTime?
+
+  // If a User or Event is deleted, delete their registrations too
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  event    Event     @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  payment  Payment?
+  feedback Feedback?
+
+  @@unique([userId, eventId])
+  @@map("registrations")
+}
+
+model Payment {
+  id             String        @id @default(cuid())
+  userId         String
+  paymentId      String        @unique
+  registrationId String        @unique
+  eventId        String
+  status         PaymentStatus @default(PENDING)
+  amount         Decimal       @db.Decimal(10, 2)
+
+  // If any parent is deleted, delete the payment record too
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  registration Registration @relation(fields: [registrationId], references: [id], onDelete: Cascade)
+  event        Event        @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@map("payments")
+}
+
+model OtpVerification {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  otp       String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@map("otp_verifications")
+}
+
+model Feedback {
+  id             String @id @default(cuid())
+  registrationId String @unique
+  description    String
+  stars          Int
+
+  // If a Registration is deleted, delete its feedback too
+  registration Registration @relation(fields: [registrationId], references: [id], onDelete: Cascade)
+
+  @@map("feedbacks")
+}
+
+model EventMod {
+  id         String    @id @default(cuid())
+  eventId    String
+  status     ModStatus @default(OPEN)
+  comments   String?
+  appliedOn  DateTime  @default(now())
+  responseOn DateTime?
+
+  // If an Event is deleted, delete its mod requests too
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@map("event_mods")
+}
