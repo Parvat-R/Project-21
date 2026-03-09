@@ -29,6 +29,7 @@ stages:
       name: project-21-backend-pool
     steps:
     - script: echo $(pwd)
+    - script: echo $(ls -a)
     - task: Docker@2
       displayName: Build and push an image to container registry
       inputs:
