@@ -10,10 +10,10 @@ const createEventModSchema = z.object({
 
 const updateSchema = z.object({
     id: z.cuid(),
-    status: z.enum([  "OPEN",
-  "UNDER_REVIEW",
-  "RESOLVED",
-  "CLOSED",])
+    status: z.enum(["OPEN",
+        "UNDER_REVIEW",
+        "RESOLVED",
+        "CLOSED",])
 })
 
 
@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
             })
 
 
-            
+
         }
 
         const { eventId, comments } = result.data;
@@ -73,5 +73,37 @@ export async function PUT(req: NextRequest) {
 
     const result = updateSchema.safeParse(body);
 
+    if (!result.success) {
+        return NextResponse.json({
+            "error": result.error
+        }, { status: 400 });
+    }
 
+    const { id, status } = result.data;
+
+    try {
+        const mod = await prisma.eventMod.update({
+            where: { id },
+            data: { status }
+        });
+
+        return NextResponse.json({
+            success: true,
+            data: mod
+        });
+    } catch (err) {
+        console.error(err);
+        return NextResponse.json({
+            "error": "Internal Server Error"
+        }, { status: 500 });
+    }
 }
+
+
+
+
+
+
+
+
+
