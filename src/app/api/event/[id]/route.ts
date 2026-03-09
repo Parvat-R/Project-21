@@ -6,10 +6,10 @@ interface RouteParams {
   params: { id: string };
 }
 
-export async function GET(req: Request, { params }: RouteParams) {
+export async function GET(req: Request, {params}: {params: Promise<{ id: string }>}) {
   try {
     const event = await prisma.event.findUnique({
-      where: { id: params.id },
+      where: { id: (await params).id },
       include: { creator: true } 
     });
 
@@ -25,9 +25,9 @@ export async function GET(req: Request, { params }: RouteParams) {
 
 
 // PATCH -> Edits an event
-export async function PATCH(req: Request, { params }: RouteParams) {
+export async function PATCH(req: Request, {params}: {params: Promise<{ id: string }>}) {
   try {
-    const { id } = params;
+    const { id } = await params;
 
     const body = await req.json();
     const validatedData = eventSchema.partial().parse(body);
@@ -45,10 +45,10 @@ export async function PATCH(req: Request, { params }: RouteParams) {
 }
 
 // DELETE -> Deletes an event
-export async function DELETE(req: Request, { params }: RouteParams) {
+export async function DELETE(req: Request, {params}: {params: Promise<{ id: string }>}) {
   try {
     await prisma.event.delete({
-      where: { id: params.id },
+      where: { id: (await params).id },
     });
 
     return new NextResponse(null, { status: 204 });
