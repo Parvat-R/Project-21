@@ -1,23 +1,28 @@
+import { Pool } from 'pg';
+import { PrismaPg } from '@prisma/adapter-pg';
+import { PrismaClient } from '@/app/generated/prisma/client';
+
+const connectionString = `${process.env.DATABASE_URL}`;
+const pool = new Pool({ connectionString });
+const adapter = new PrismaPg(pool);
+const prisma = new PrismaClient({ adapter });
+
+export default prisma;
 import { NextRequest, NextResponse } from "next/server";
-import prisma from "@/lib/prisma";
-import { PrismaClient } from "@/app/generated/prisma/client";
-import { PrismaPg } from "@prisma/adapter-pg";    
-
-
 
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params:  Promise<{id:string}>  }
 ) {
   try {
 
-    const eventId : string= params.id;
+    const {id}= await params;
 
     const feedbacks = await prisma.feedback.findMany({
       where: {
         registration: {
-          eventId: eventId, 
+          eventId: id, 
         },
       },
 

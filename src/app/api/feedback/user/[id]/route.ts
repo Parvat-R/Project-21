@@ -1,18 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import prisma from "@/lib/prisma";
-import { PrismaClient } from "@/app/generated/prisma/client";
-import { PrismaPg } from "@prisma/adapter-pg";    
-
-
-
+import prisma from "@/lib/prisma";  
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> } // 1. Wrap in Promise
 ) {
   try {
-
-    const userId : string= params.id;
+    const { id: userId } = await params; // 2. Await the params
 
     const feedbacks = await prisma.feedback.findMany({
       where: {
@@ -28,7 +22,6 @@ export async function GET(
       },
     });
 
-  
     return NextResponse.json(
       { success: true, data: feedbacks },
       { status: 200 }

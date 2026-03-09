@@ -13,6 +13,7 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const { id, registrationId, description, stars } = body;
+    console.log("==Received feedback data:", { id, registrationId, description, stars });   
 
     const newFeedback = await prisma.feedback.create({
       data: {
@@ -37,7 +38,6 @@ export async function POST(req: NextRequest) {
     );
   }
 }
-
 
 
 
