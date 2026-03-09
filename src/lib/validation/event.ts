@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const eventSchema = z.object({
   title: z.string().min(3).max(100),
-  description: z.string().min(10),
+  description: z.string().optional(),
   slug: z.string().min(3),
   startDatetime: z.coerce.date(),
   endDatetime: z.coerce.date(),
