@@ -1,5 +1,8 @@
 # Project 21
 
+
+
+
 ## Models:
 ```
 User
@@ -97,7 +100,7 @@ Surya
             / :GET -> all events created by a particular user
 
 
-/register
+/register   
     Sadha
     / :GET -> returns all registration
     /event/[id]
@@ -116,7 +119,7 @@ Parvat
 /eventMod
     / :GET -> returns all the event
     / :POST -> new approval request
-    / :PUT -> approve or anything by admin
+    / :PUT -> approve or anything by admin  
 
 
 Mahalakshmi
