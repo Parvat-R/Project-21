@@ -8,6 +8,8 @@ export const runtime = 'nodejs';
 
 
 export async function middleware(req: NextRequest) {
+  const pathname = req.nextUrl.pathname;
+
   const token = req.cookies.get("token")?.value;
 
   if (!token) {
@@ -37,7 +39,6 @@ export async function middleware(req: NextRequest) {
     }
 
     // Role-based access control
-    const pathname = req.nextUrl.pathname;
 
     if (pathname.startsWith("/admin") && user.role !== "ADMIN") {
       return NextResponse.json(
