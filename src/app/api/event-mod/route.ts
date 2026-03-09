@@ -1,6 +1,6 @@
 import prisma from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
-import z from "zod";
+import z from "zod"; 
 
 
 const createEventModSchema = z.object({
@@ -75,3 +75,15 @@ export async function PUT(req: NextRequest) {
 
 
 }
+
+
+
+
+
+
+
+
+
+
+
+

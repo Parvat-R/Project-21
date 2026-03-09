@@ -1,88 +1,59 @@
-import prisma from "@/lib/prisma";
-import z from "zod";
+import { NextResponse } from "next/server";
+import  prisma  from "@/lib/prisma";
+import { eventSchema } from "@/lib/validation/event";
 
-export async function GET(
-  request: Request,
-  { params }: { params: { id: string } }
-)
- {
+interface RouteParams {
+  params: { id: string };
+}
+
+export async function GET(req: Request, { params }: RouteParams) {
   try {
     const event = await prisma.event.findUnique({
-      where: {
-        id: params.id,
-      },
-      include: {
-        creator: true,        // get user who created event
-        registrations: true,  // optional
-        payments: true,       // optional
-      },
+      where: { id: params.id },
+      include: { creator: true } 
     });
 
-    if (!event) {
-      return Response.json(
-        { message: "Event not found" },
-        { status: 404 }
-      );
-    }
+    if (!event) return NextResponse.json({ error: "Event not found" }, { status: 404 });
 
-    return Response.json(event);
-  } catch (error) {
-    return Response.json(
-      { message: "Something went wrong" },
-      { status: 500 }
-    );
+    return NextResponse.json(event);
+  }
+   catch (error) {
+    return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }
 
 
-//patch
-export async function PATCH(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
+
+// PATCH -> Edits an event
+export async function PATCH(req: Request, { params }: RouteParams) {
   try {
-    const body = await request.json();
-    const { title, description, date } = body;
+    const { id } = params;
+
+    const body = await req.json();
+    const validatedData = eventSchema.partial().parse(body);
 
     const updatedEvent = await prisma.event.update({
-      where: {
-        id: params.id,
-      },
-      data: {
-        title,
-        description,
-        date: new Date(date),
-      },
+      where: { id },
+      data: validatedData,
     });
 
-    return Response.json(updatedEvent);
-  } catch (error) {
-    return Response.json(
-      { message: "Something went wrong" },
-      { status: 500 }
-    );
+    return NextResponse.json(updatedEvent);
+  } catch (error: unknown) {
+    console.error(error);
+    return NextResponse.json({ error: "failed to update event" }, { status: 400 });
   }
 }
-//delete
-export async function DELETE(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
+
+// DELETE -> Deletes an event
+export async function DELETE(req: Request, { params }: RouteParams) {
   try {
     await prisma.event.delete({
-      where: {
-        id: params.id,
-      },
+      where: { id: params.id },
     });
 
-    return Response.json(
-      { message: "Event deleted successfully" },
-      { status: 200 }
-    );
+    return new NextResponse(null, { status: 204 });
   } catch (error) {
-    return Response.json(
-      { message: "Something went wrong" },
-      { status: 500 }
-    );
-    }
+    return NextResponse.json({ error: "Delete failed" }, { status: 400 });
+  }
 }
+
