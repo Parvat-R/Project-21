@@ -13,7 +13,7 @@ variables:
   dockerRegistryServiceConnection: '8938c440-71ea-4043-b7d0-2bd323410d65'
   imageRepository: 'project21backenddev'
   containerRegistry: 'project21backenddev.azurecr.io'
-  dockerfilePath: './Dockerfile'
+  dockerfilePath: '**/Dockerfile'
   tag: '$(Build.BuildId)'
 
   # Agent VM image name
