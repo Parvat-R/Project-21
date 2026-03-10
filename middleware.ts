@@ -2,96 +2,82 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-// NOTE: Middleware always runs on the Edge runtime in Next.js.
-const ALLOWED_ORIGINS = [
-  process.env.FRONTEND_URL?.replace(/\/$/, "") || "", // ensure no trailing slash
-  // You can add other allowed origins here if you have staging/localhost:
-  // "http://localhost:3000"
+/**
+ * CORS configuration
+ * - If you truly want allow-all with credentials, keep "*" and we'll reflect the Origin.
+ * - For production, prefer explicit origins and remove "*".
+ */
+const RAW_ALLOWED = [
+  process.env.FRONTEND_URL?.replace(/\/$/, "") || "",
+  // Add more allowed origins as needed:
+  // "http://localhost:3000",
+  "*", // remove in prod if you can
 ].filter(Boolean);
 
-function isOriginAllowed(origin: string) {
+const ALLOW_ALL = RAW_ALLOWED.includes("*");
+const ALLOWED_ORIGINS = RAW_ALLOWED.filter((o) => o !== "*");
+
+function isOriginAllowed(origin: string): boolean {
   if (!origin) return false;
   const normalized = origin.replace(/\/$/, "");
-  return ALLOWED_ORIGINS.includes(normalized);
+  return ALLOW_ALL ? true : ALLOWED_ORIGINS.includes(normalized);
 }
 
-function setCors(res: NextResponse, origin: string, req: NextRequest) {
+function applyCors(res: NextResponse, origin: string, req: NextRequest) {
+  // With credentials=true, ACAO cannot be "*"; reflect specific origin.
   res.headers.set("Access-Control-Allow-Origin", origin);
   res.headers.set("Vary", "Origin");
-
-  // If you use cookies or auth headers cross-site, keep this true
   res.headers.set("Access-Control-Allow-Credentials", "true");
 
-  // For preflight, reflect the requested method/headers if present
   const reqMethod = req.headers.get("access-control-request-method");
   const reqHeaders = req.headers.get("access-control-request-headers");
 
-  // Fallbacks
-  res.headers.set(
-    "Access-Control-Allow-Methods",
-    reqMethod || "GET, POST, PUT, PATCH, DELETE, OPTIONS"
-  );
+  res.headers.set("Access-Control-Allow-Methods", reqMethod || "GET, POST, PUT, PATCH, DELETE, OPTIONS");
   res.headers.set(
     "Access-Control-Allow-Headers",
     reqHeaders || "Content-Type, Authorization, X-Requested-With, Accept, Origin"
   );
-
-  // Optional: cache preflight for 10 minutes
-  res.headers.set("Access-Control-Max-Age", "600");
-
-  // Optional: expose headers you want the browser to read
-  // res.headers.set("Access-Control-Expose-Headers", "X-Request-Id");
-
+  res.headers.set("Access-Control-Max-Age", "600"); // cache preflight 10 mins
   return res;
 }
 
 export function middleware(req: NextRequest) {
   const origin = req.headers.get("origin") || "";
+  const isPreflight = req.method === "OPTIONS";
 
-  // If no FRONTEND_URL configured, fail closed
-  if (ALLOWED_ORIGINS.length === 0) {
+  // Fail closed only if nothing is configured at all (no "*" and no concrete origins)
+  if (!ALLOW_ALL && ALLOWED_ORIGINS.length === 0) {
     return new NextResponse(
-      JSON.stringify({ error: "CORS misconfigured: FRONTEND_URL not set in backend" }),
-      { status: 500, headers: { "Content-Type": "application/json" } }
+      JSON.stringify({ error: "CORS misconfigured: no allowed origins configured" }),
+      { status: 403, headers: { "Content-Type": "application/json" } }
     );
   }
 
-  const isApi = req.nextUrl.pathname.startsWith("/api/");
-  const isPreflight = req.method === "OPTIONS";
+  const allowed = isOriginAllowed(origin);
 
-  // Only enforce CORS for cross-origin API calls
-  if (isApi) {
-    const allowed = isOriginAllowed(origin);
-
-    if (isPreflight) {
-      // Always answer preflight for known origins with 204 and CORS headers
-      if (!allowed) {
-        // For disallowed origins, you *can* reject with 403. The browser will show a CORS error.
-        // This is fine. Alternatively, you can 204 with a restrictive ACAO to reduce noisy logs.
-        return new NextResponse(null, { status: 403 });
-      }
-      const res = new NextResponse(null, { status: 204 });
-      return setCors(res, origin, req);
-    }
-
-    // Non-OPTIONS: require allowed origin for cross-origin requests
-    if (!allowed && origin) {
-      return new NextResponse(
-        JSON.stringify({ error: "CORS: origin not allowed" }),
-        { status: 403, headers: { "Content-Type": "application/json" } }
-      );
-    }
-
-    // Pass through and attach CORS headers for allowed origins
-    const res = NextResponse.next();
-    if (allowed) setCors(res, origin, req);
-    return res;
+  // Handle preflight
+  if (isPreflight) {
+    if (!allowed) return new NextResponse(null, { status: 403 });
+    const res = new NextResponse(null, { status: 204 });
+    return applyCors(res, origin, req);
   }
 
-  // Not an API route — continue
-  return NextResponse.next();
+  // Simple requests
+  if (origin && !allowed) {
+    return new NextResponse(
+      JSON.stringify({ error: "CORS: origin not allowed" }),
+      { status: 403, headers: { "Content-Type": "application/json" } }
+    );
+  }
+
+  // Pass through and attach CORS headers for allowed cross-origin requests
+  const res = NextResponse.next();
+  if (origin && allowed) applyCors(res, origin, req);
+  return res;
 }
 
+// Run for /api and all subpaths; use Node runtime (experimental in canary)
 export const config = {
   matcher: ["/api/:path*"],
+  runtime: "nodejs", // <<< requires Next.js 15.2 canary + experimental flag
 };
