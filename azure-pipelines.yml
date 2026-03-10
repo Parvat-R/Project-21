@@ -33,7 +33,7 @@ stages:
     pool:
       name: project-21-backend-pool
     steps:
-    # - script: docker system prune -a -f
+    - script: docker system prune -a -f
 
     - task: AzureKeyVault@2
       inputs:
