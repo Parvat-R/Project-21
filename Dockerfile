@@ -1,9 +1,20 @@
-FROM node:24
+FROM node:24-alpine
+
 WORKDIR /usr/home/backend
+
+COPY package*.json ./
+RUN npm install
+RUN npm cache clean --force
 
 COPY . .
 
-RUN npm i
+ARG DATABASE_URL
+ENV DATABASE_URL=${DATABASE_URL}
+
+RUN npx prisma generate
+
 RUN npm run build
+
 EXPOSE 3000
-RUN npm run start
+
+CMD ["npm", "run", "start"] 

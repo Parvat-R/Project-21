@@ -9,5 +9,7 @@ export const eventSchema = z.object({
   seats: z.number().int().positive(),
   amount: z.number().nonnegative(),
   visibility: z.enum(["INTERNAL", "PUBLIC"]),
+  approvalStatus: z.enum(["PENDING", "APPROVED", "REJECTED"]).optional(),
   creatorId: z.string(),
+  imageUrl: z.string().trim().optional(),
 });

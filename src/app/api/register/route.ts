@@ -1,7 +1,14 @@
 import prisma from "@/lib/prisma";
+import { NextResponse } from "next/server";
 
+// GET /api/register - Get all registrations
 export async function GET() {
-    const data = await prisma.registration.findMany();
-    return Response.json(data);
-    
+    try{
+        const data = await prisma.registration.findMany();
+        return NextResponse.json(data);
+    }
+    catch(error){
+        console.error(error)
+        return NextResponse.json({message : "Failed to fetch registrations"}, {status: 500})
+    }
 }
