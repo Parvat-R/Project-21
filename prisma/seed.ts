@@ -3,6 +3,18 @@ import bcrypt from "bcryptjs";
 import prisma from "@/lib/prisma";
 
 async function main() {
+  console.log("🧹 Cleaning up database...");
+  // Use a transaction for cleanup to be safe
+  await prisma.$transaction([
+    prisma.feedback.deleteMany(),
+    prisma.payment.deleteMany(),
+    prisma.eventMod.deleteMany(),
+    prisma.registration.deleteMany(),
+    prisma.event.deleteMany(),
+    prisma.user.deleteMany(),
+    prisma.otpVerification.deleteMany(),
+  ]);
+
   const passwordHash = await bcrypt.hash("password123", 10);
 
   // --- USERS ---
@@ -36,20 +48,35 @@ async function main() {
     ),
   );
 
-  const admins = await Promise.all(
-    Array.from({ length: 3 }).map((_, i) =>
-      prisma.user.create({
-        data: {
-          name: `Admin ${i + 1}`,
-          email: `admin${i + 1}@example.com`,
-          password: passwordHash,
-          role: "ADMIN",
-          image:
-            "https://res.cloudinary.com/djfefn9qx/image/upload/v1773122893/event_f0q2gq.png",
-        },
-      }),
-    ),
-  );
+  const customAdminPasswordHash = await bcrypt.hash("Sadha@123$", 10);
+  const specificAdmin = await prisma.user.create({
+    data: {
+      name: "Sadhasivam Admin",
+      email: "sadhasivam.a07@gmail.com",
+      password: customAdminPasswordHash,
+      role: "ADMIN",
+      image:
+        "https://res.cloudinary.com/djfefn9qx/image/upload/v1773122893/event_f0q2gq.png",
+    },
+  });
+
+  const admins = [
+    specificAdmin,
+    ...(await Promise.all(
+      Array.from({ length: 2 }).map((_, i) =>
+        prisma.user.create({
+          data: {
+            name: `Admin ${i + 1}`,
+            email: `admin${i + 1}@example.com`,
+            password: passwordHash,
+            role: "ADMIN",
+            image:
+              "https://res.cloudinary.com/djfefn9qx/image/upload/v1773122893/event_f0q2gq.png",
+          },
+        }),
+      ),
+    )),
+  ];
 
   // --- EVENTS ---
   const events = await Promise.all(
