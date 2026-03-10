@@ -11,7 +11,7 @@ const deregisterSchema = z.object({
 });
 
 // GET /api/register/event/[id] - Get all registrations for an event
-export async function GET(request: Request,{ params }: { params: { id: string } }) {
+export async function GET(request: Request,{ params }: {params: Promise<{ id: string }>}) {
 
     const { id } = await params
 
@@ -28,7 +28,7 @@ export async function GET(request: Request,{ params }: { params: { id: string } 
 
 // POST /api/register/event/[id] - Register a user for an event
 // body : { userId : string }
-export async function POST(request: Request, { params }: { params: { id: string } }) {
+export async function POST(request: Request, { params }: {params: Promise<{ id: string }>}) {
     try {
         const body = await request.json();
         const parsed = registerSchema.safeParse(body);
@@ -65,7 +65,7 @@ export async function POST(request: Request, { params }: { params: { id: string 
 
 // DELETE /api/register/event/[id] - Deregister a user from an event
 // body : { id : string } (registration id)
-export async function DELETE(request: Request, { params }: { params: { id: string } }) {
+export async function DELETE(request: Request, { params }: {params: Promise<{ id: string }>}) {
     try {
         const body = await request.json();
         const parsed = deregisterSchema.safeParse(body);
