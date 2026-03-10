@@ -108,7 +108,7 @@ model Event {
   createdOn      DateTime       @default(now())
   startDatetime  DateTime
   endDatetime    DateTime
-  imageData      Bytes?
+  imageUrl       String?
   seats          Int
   amount         Decimal        @db.Decimal(10, 2)
   visibility     Visibility     @default(PUBLIC)

@@ -27,6 +27,8 @@ function setCorsHeaders(res: NextResponse, origin: string | null) {
 }
 
 export async function middleware(req: NextRequest) {
+  const pathname = req.nextUrl.pathname;
+
   console.log("🔥 MIDDLEWARE HIT:", req.method, req.nextUrl.pathname);
 
   const pathname = req.nextUrl.pathname;
@@ -76,6 +78,8 @@ export async function middleware(req: NextRequest) {
         { status: 401, headers: res.headers },
       );
     }
+
+    // Role-based access control
 
     if (pathname.startsWith("/admin") && user.role !== "ADMIN") {
       return NextResponse.json(

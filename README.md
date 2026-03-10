@@ -105,7 +105,7 @@ Surya
         / :POST -> creates a new registration for that event
         / :DELETE -> Deletes the registration
     /[id]
-        / :GET -> returs a particular registration
+        / :GET -> returs a particular registration **
         /attendance :PUT -> make attendance true or flase
     
     /user/[id]
