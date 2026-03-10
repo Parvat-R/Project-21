@@ -5,7 +5,7 @@ export const welcomeEventAppTemplate = (name: string): string => {
   <html>
     <head>
       <meta charset="UTF-8">
-      <title>Welcome to EventHub</title>
+      <title>Welcome to JEVENT</title>
       <style>
         body {
           background-color: #f9f9f9;
@@ -66,12 +66,12 @@ export const welcomeEventAppTemplate = (name: string): string => {
       <div class="container">
         <img class="logo"
           src="https://res.cloudinary.com/djfefn9qx/image/upload/v1773122893/event_f0q2gq.png"
-          alt="EventHub Logo" />
-        <div class="message">Welcome to EventHub!</div>
+          alt="JEVENT Logo" />
+        <div class="message">Welcome to JEVENT!</div>
         <div class="body">
           <p>Dear ${name},</p>
           <p>
-            Thank you for signing up with EventHub. Your account has been successfully created,
+            Thank you for signing up with JEVENT. Your account has been successfully created,
             and you’re now part of our growing community of event organisers and participants.
           </p>
           <p>
@@ -83,7 +83,7 @@ export const welcomeEventAppTemplate = (name: string): string => {
         </div>
         <div class="support">
           Need help? Reach out to us at
-          <a href="mailto:support@eventhub.com">support@eventhub.com</a>.
+          <a href="mailto:support@jevent.com">support@jevent.com</a>.
         </div>
       </div>
     </body>
