@@ -45,6 +45,7 @@ stages:
       displayName: Build image
       env:
         DATABASE_URL: $(DATABASEURL)
+        FRONTEND_URL: $(FRONTENDURL)
         MAIL_HOST: $(MAILHOST)
         MAIL_USER: $(MAILUSER)
         MAIL_PASS: $(MAILPASS)
@@ -53,7 +54,7 @@ stages:
         repository: $(imageRepository)
         dockerfile: $(dockerfilePath)
         containerRegistry: $(dockerRegistryServiceConnection)
-        arguments: --build-arg DATABASE_URL=$(DATABASE_URL) --build-arg MAIL_HOST=$(MAIL_HOST) --build-arg MAIL_USER=$(MAIL_USER)  --build-arg MAIL_PASS=$(MAIL_PASS) 
+        arguments: --build-arg DATABASE_URL=$(DATABASE_URL) --build-arg FRONTEND_URL=$(FRONTEND_URL) --build-arg MAIL_HOST=$(MAIL_HOST) --build-arg MAIL_USER=$(MAIL_USER)  --build-arg MAIL_PASS=$(MAIL_PASS) 
         tags: |
           $(tag)
 
