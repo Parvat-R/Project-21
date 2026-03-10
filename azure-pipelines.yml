@@ -37,29 +37,24 @@ stages:
 
     - task: AzureKeyVault@2
       inputs:
-        azureSubscription: $(subscribtionId)
+        azureSubscription: $(subscriptionId)
         KeyVaultName: 'project-21-key-vault'
         SecretsFilter: '*'
 
+
     - task: Docker@2
       displayName: Build image
-      env:
-        DATABASE_URL: $(DATABASEURL)
-        FRONTEND_URL: $(FRONTENDURL)
-        MAIL_HOST: $(MAILHOST)
-        MAIL_USER: $(MAILUSER)
-        MAIL_PASS: $(MAILPASS)
       inputs:
         command: build
         repository: $(imageRepository)
         dockerfile: $(dockerfilePath)
-        containerRegistry: $(dockerRegistryServiceConnection)        
+        containerRegistry: $(dockerRegistryServiceConnection)
         arguments: >
-          --build-arg DATABASE_URL=$(DATABASE_URL)
-          --build-arg FRONTEND_URL=$(FRONTEND_URL)
-          --build-arg MAIL_HOST=$(MAIL_HOST)
-          --build-arg MAIL_USER=$(MAIL_USER)
-          --build-arg MAIL_PASS=$(MAIL_PASS)
+          --build-arg DATABASE_URL="$(DATABASEURL)"
+          --build-arg FRONTEND_URL="$(FRONTENDURL)"
+          --build-arg MAIL_HOST="$(MAILHOST)"
+          --build-arg MAIL_USER="$(MAILUSER)"
+          --build-arg MAIL_PASS="$(MAILPASS)"
         tags: |
           $(tag)
 
@@ -73,6 +68,6 @@ stages:
           $(tag)
     - task: AzureWebAppContainer@1
       inputs:
-        azureSubscription: 'Azure subscription 1(0839a5ee-329a-4b35-82c1-7c70e55542eb)'
+        azureSubscription: $(subscriptionId)
         appName: 'project-21-backend-dev'
         containers: 'project21backenddev.azurecr.io/project:43'
