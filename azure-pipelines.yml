@@ -1,0 +1,54 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+- main
+
+resources:
+- repo: self
+
+variables:
+  dockerRegistryServiceConnection: '3e4a95aa-a0e7-4c66-bfcf-2e042ccaedb8'
+  imageRepository: 'project'
+  containerRegistry: 'project21backenddev.azurecr.io'
+  dockerfilePath: '$(Build.SourcesDirectory)/Dockerfile'
+  tag: '43'
+  vmImageName: 'ubuntu-latest'
+
+stages:
+- stage: Build
+  displayName: Build and push stage
+  jobs:
+  - job: Build
+    displayName: Build
+    pool:
+      name: project-21-backend-pool
+    steps:
+    - script: docker system prune -a -f
+
+    - task: Docker@2
+      displayName: Build image
+      inputs:
+        command: build
+        repository: $(imageRepository)
+        dockerfile: $(dockerfilePath)
+        containerRegistry: $(dockerRegistryServiceConnection)
+        arguments: --build-arg DATABASE_URL=$(DATABASE_URL)
+        tags: |
+          $(tag)
+
+    - task: Docker@2
+      displayName: Push image
+      inputs:
+        command: push
+        repository: $(imageRepository)
+        containerRegistry: $(dockerRegistryServiceConnection)
+        tags: |
+          $(tag)
+    - task: AzureWebAppContainer@1
+      inputs:
+        azureSubscription: 'Azure subscription 1(0839a5ee-329a-4b35-82c1-7c70e55542eb)'
+        appName: 'project-21-backend-dev'
+        containers: 'project21backenddev.azurecr.io/project:43'
