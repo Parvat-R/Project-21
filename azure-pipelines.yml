@@ -51,6 +51,7 @@ stages:
         containerRegistry: $(dockerRegistryServiceConnection)
         arguments: >
           --build-arg DATABASE_URL="$(DATABASEURL)"
+          --build-arg JWT_TOKEN="$(JWTSECRET)"
           --build-arg FRONTEND_URL="$(FRONTENDURL)"
           --build-arg MAIL_HOST="$(MAILHOST)"
           --build-arg MAIL_USER="$(MAILUSER)"
