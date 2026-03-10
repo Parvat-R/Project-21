@@ -1,5 +1,5 @@
 import type { NextConfig } from "next";
-console.log(process.env.FRONTEND_URL)
+console.log("FRONTEND_URL:", process.env.FRONTEND_URL)
 const nextConfig: NextConfig = {
   async headers() {
     return [
