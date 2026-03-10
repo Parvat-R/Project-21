@@ -1,113 +1,60 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import jwt from "jsonwebtoken";
-import prisma from "@/lib/prisma";
 
-export const runtime = "nodejs";
+const ALLOWED_ORIGIN = process.env.FRONTEND_URL || ""; // must be set in backend runtime
 
-const ALLOWED_ORIGINS = [process.env.FRONTEND_URL || "*"];
+console.log("Allowed Origins: ", ALLOWED_ORIGIN)
 
-function setCorsHeaders(res: NextResponse, origin: string | null) {
-  // During development, we can be a bit more permissive with localhost
-  if (origin && (ALLOWED_ORIGINS.includes(origin) || origin.startsWith("http://localhost:"))) {
-    res.headers.set("Access-Control-Allow-Origin", origin);
-  } else {
-    // Fallback to first allowed origin if no match but still allowing credentials
-    res.headers.set("Access-Control-Allow-Origin", ALLOWED_ORIGINS[0]);
-  }
-  
+function setCors(res: NextResponse, origin: string) {
+  res.headers.set("Access-Control-Allow-Origin", origin);
+  res.headers.set("Vary", "Origin");
   res.headers.set("Access-Control-Allow-Credentials", "true");
-  res.headers.set(
-    "Access-Control-Allow-Methods",
-    "GET, POST, PUT, PATCH, DELETE, OPTIONS",
-  );
+  res.headers.set("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS");
   res.headers.set(
     "Access-Control-Allow-Headers",
-    "Content-Type, Authorization, authorization, X-Requested-With, Accept, Origin",
+    "Content-Type, Authorization, X-Requested-With, Accept, Origin"
   );
+  // Optional: cache preflight for 10 minutes
+  res.headers.set("Access-Control-Max-Age", "600");
   return res;
 }
 
-export async function middleware(req: NextRequest) {
-  const pathname = req.nextUrl.pathname;
-  const origin = req.headers.get("origin");
+export function middleware(req: NextRequest) {
+  const origin = req.headers.get("origin") || "";
 
-  console.log(" MIDDLEWARE HIT:", req.method, req.nextUrl.pathname);
+  // If FRONTEND_URL is not configured, fail closed
+  if (!ALLOWED_ORIGIN) {
+    return new NextResponse(
+      JSON.stringify({ error: "CORS misconfigured: FRONTEND_URL not set" }),
+      { status: 500, headers: { "Content-Type": "application/json" } }
+    );
+  }
 
-  // Handle preflight OPTIONS requests — must respond before any auth checks
+  // Reject any origin that isn't exactly the configured frontend
+  const isAllowed = origin === ALLOWED_ORIGIN;
+
+  // Preflight
   if (req.method === "OPTIONS") {
-    return setCorsHeaders(new NextResponse(null, { status: 204 }), origin);
+    if (!isAllowed) return new NextResponse(null, { status: 403 });
+    return setCors(new NextResponse(null, { status: 204 }), ALLOWED_ORIGIN);
   }
 
-  const res = NextResponse.next();
-  setCorsHeaders(res, origin); // attach CORS headers to every response
-
-  // Allow public auth routes
-  if (
-    pathname.startsWith("/api/auth/signup") ||
-    pathname.startsWith("/api/auth/signin")
-  ) {
-    return res;
-  }
-
-  // JWT authentication
-  const token = req.cookies.get("token")?.value;
-
-  if (!token) {
-    return NextResponse.json(
-      { error: "Unauthorized: No token provided" },
-      { status: 401, headers: res.headers },
-    );
-  }
-
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as {
-      userId: string;
-      email: string;
-    };
-
-    const user = await prisma.user.findUnique({
-      where: { id: decoded.userId },
-    });
-
-    if (!user) {
-      return NextResponse.json(
-        { error: "Unauthorized: User not found" },
-        { status: 401, headers: res.headers },
+  // Non-OPTIONS: for API, block if origin not allowed
+  if (req.nextUrl.pathname.startsWith("/api/")) {
+    if (!isAllowed) {
+      return new NextResponse(
+        JSON.stringify({ error: "CORS: origin not allowed" }),
+        { status: 403, headers: { "Content-Type": "application/json" } }
       );
     }
-
-    // Role-based access control
-
-    if (pathname.startsWith("/admin") && user.role !== "ADMIN") {
-      return NextResponse.json(
-        { error: "Forbidden: Admins only" },
-        { status: 403, headers: res.headers },
-      );
-    }
-
-    if (pathname.startsWith("/organiser") && user.role !== "ORGANISER") {
-      return NextResponse.json(
-        { error: "Forbidden: Organisers only" },
-        { status: 403, headers: res.headers },
-      );
-    }
-
-    return res;
-  } catch (err) {
-    console.error("JWT verification failed:", err);
-    return NextResponse.json(
-      { error: "Unauthorized: Invalid token" },
-      { status: 401, headers: res.headers },
-    );
+    const res = NextResponse.next();
+    return setCors(res, ALLOWED_ORIGIN);
   }
+
+  // For non-API routes, just continue (usually SSR/HTML)
+  return NextResponse.next();
 }
 
 export const config = {
-  matcher: [
-    "/api/:path*",
-    "/admin/:path*",
-    "/organiser/:path*",
-    "/user/:path*",
-  ],
+  matcher: ["/api/:path*"],
 };
