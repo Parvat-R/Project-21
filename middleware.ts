@@ -5,16 +5,13 @@ import prisma from "@/lib/prisma";
 
 export const runtime = "nodejs";
 
-const ALLOWED_ORIGINS = [
-  "http://localhost:3000",
-  "https://app.yourdomain.com", // your production frontend
-];
+const ALLOWED_ORIGINS = ["*,"];
 
 function setCorsHeaders(res: NextResponse, origin: string | null) {
   if (origin && ALLOWED_ORIGINS.includes(origin)) {
     res.headers.set("Access-Control-Allow-Origin", origin);
   }
-  res.headers.set("Access-Control-Allow-Credentials", "true"); // required for cookies
+  res.headers.set("Access-Control-Allow-Credentials", "true");
   res.headers.set(
     "Access-Control-Allow-Methods",
     "GET, POST, PUT, DELETE, OPTIONS",
@@ -28,16 +25,15 @@ function setCorsHeaders(res: NextResponse, origin: string | null) {
 
 export async function middleware(req: NextRequest) {
   const pathname = req.nextUrl.pathname;
-
-  console.log("🔥 MIDDLEWARE HIT:", req.method, req.nextUrl.pathname);
-
-  const pathname = req.nextUrl.pathname;
   const origin = req.headers.get("origin");
-  console.log("🌍 ORIGIN:", origin);
+
+  console.log(" MIDDLEWARE HIT:", req.method, req.nextUrl.pathname);
+  console.log(" ORIGIN:", origin);
+  console.log("ORIGIN:", origin);
 
   // Handle preflight OPTIONS requests — must respond before any auth checks
   if (req.method === "OPTIONS") {
-    console.log("✅ PREFLIGHT HANDLED");
+    console.log("PREFLIGHT HANDLED");
     return setCorsHeaders(new NextResponse(null, { status: 204 }), origin);
   }
 
