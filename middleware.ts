@@ -8,9 +8,14 @@ export const runtime = "nodejs";
 const ALLOWED_ORIGINS = [process.env.FRONTEND_URL || "*"];
 
 function setCorsHeaders(res: NextResponse, origin: string | null) {
-  if (origin && ALLOWED_ORIGINS.includes(origin)) {
+  // During development, we can be a bit more permissive with localhost
+  if (origin && (ALLOWED_ORIGINS.includes(origin) || origin.startsWith("http://localhost:"))) {
     res.headers.set("Access-Control-Allow-Origin", origin);
+  } else {
+    // Fallback to first allowed origin if no match but still allowing credentials
+    res.headers.set("Access-Control-Allow-Origin", ALLOWED_ORIGINS[0]);
   }
+  
   res.headers.set("Access-Control-Allow-Credentials", "true");
   res.headers.set(
     "Access-Control-Allow-Methods",
@@ -18,7 +23,7 @@ function setCorsHeaders(res: NextResponse, origin: string | null) {
   );
   res.headers.set(
     "Access-Control-Allow-Headers",
-    "Content-Type, Authorization",
+    "Content-Type, Authorization, X-Requested-With",
   );
   return res;
 }
@@ -28,12 +33,9 @@ export async function middleware(req: NextRequest) {
   const origin = req.headers.get("origin");
 
   console.log(" MIDDLEWARE HIT:", req.method, req.nextUrl.pathname);
-  console.log(" ORIGIN:", origin);
-  console.log("ORIGIN:", origin);
 
   // Handle preflight OPTIONS requests — must respond before any auth checks
   if (req.method === "OPTIONS") {
-    console.log("PREFLIGHT HANDLED");
     return setCorsHeaders(new NextResponse(null, { status: 204 }), origin);
   }
 
@@ -43,7 +45,7 @@ export async function middleware(req: NextRequest) {
   // Allow public auth routes
   if (
     pathname.startsWith("/api/auth/signup") ||
-    pathname.startsWith("/api/auth/login")
+    pathname.startsWith("/api/auth/signin")
   ) {
     return res;
   }
