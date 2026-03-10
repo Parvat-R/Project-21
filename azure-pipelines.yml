@@ -17,6 +17,8 @@ variables:
   imageRepository: 'project'
   containerRegistry: 'project21backenddev.azurecr.io'
   dockerfilePath: '$(Build.SourcesDirectory)/Dockerfile'
+  AzureKeyVaultName: 'project-21-key-vault'
+  AzureResourceGroupName: 'Project-21'
   tag: '43'
   vmImageName: 'ubuntu-latest'
 
@@ -33,6 +35,9 @@ stages:
 
     - task: AzureCLI@2
       displayName: 'Allow agent IP'
+      env:
+        AzureKeyVaultName: $(AzureKeyVaultName)
+        AzureResourceGroupName: $(AzureResourceGroupName)
       inputs:
         azureSubscription: 'Azure subscription 1(0839a5ee-329a-4b35-82c1-7c70e55542eb)'
         scriptType: 'bash'
