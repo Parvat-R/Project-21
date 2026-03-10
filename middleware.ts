@@ -5,7 +5,7 @@ import prisma from "@/lib/prisma";
 
 export const runtime = "nodejs";
 
-const ALLOWED_ORIGINS = ["http://localhost:3001", "http://localhost:3000"];
+const ALLOWED_ORIGINS = [process.env.FRONTEND_URL || "*"];
 
 function setCorsHeaders(res: NextResponse, origin: string | null) {
   // During development, we can be a bit more permissive with localhost
