@@ -5,7 +5,7 @@ import prisma from "@/lib/prisma";
 
 export const runtime = "nodejs";
 
-const ALLOWED_ORIGINS = ["*,"];
+const ALLOWED_ORIGINS = [process.env.FRONTEND_URL || "*"];
 
 function setCorsHeaders(res: NextResponse, origin: string | null) {
   if (origin && ALLOWED_ORIGINS.includes(origin)) {
