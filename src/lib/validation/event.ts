@@ -11,5 +11,5 @@ export const eventSchema = z.object({
   visibility: z.enum(["INTERNAL", "PUBLIC"]),
   approvalStatus: z.enum(["PENDING", "APPROVED", "REJECTED"]).optional(),
   creatorId: z.string(),
-  imageData: z.string().optional(),
+  imageUrl: z.string().trim().optional(),
 });

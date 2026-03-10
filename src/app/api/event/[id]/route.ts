@@ -26,14 +26,6 @@ export async function PATCH(req: Request, {params}: {params: Promise<{ id: strin
 
     const body = await req.json();
     const validatedData = eventSchema.partial().parse(body);
-    const imageBuffer = validatedData.imageData
-      ? Buffer.from(
-          validatedData.imageData.startsWith("data:")
-            ? validatedData.imageData.split(",")[1] ?? ""
-            : validatedData.imageData,
-          "base64",
-        )
-      : undefined;
 
     const hasContentEdit =
       validatedData.title !== undefined ||
@@ -44,7 +36,7 @@ export async function PATCH(req: Request, {params}: {params: Promise<{ id: strin
       validatedData.seats !== undefined ||
       validatedData.amount !== undefined ||
       validatedData.visibility !== undefined ||
-      imageBuffer !== undefined;
+      validatedData.imageUrl !== undefined;
 
     const nextApprovalStatus =
       validatedData.approvalStatus !== undefined
@@ -64,7 +56,7 @@ export async function PATCH(req: Request, {params}: {params: Promise<{ id: strin
         ...(validatedData.seats !== undefined ? { seats: validatedData.seats } : {}),
         ...(validatedData.amount !== undefined ? { amount: validatedData.amount } : {}),
         ...(validatedData.visibility !== undefined ? { visibility: validatedData.visibility } : {}),
-        ...(imageBuffer !== undefined ? { imageData: imageBuffer } : {}),
+        ...(validatedData.imageUrl !== undefined ? { imageUrl: validatedData.imageUrl?.trim() || null } : {}),
         ...(nextApprovalStatus !== undefined ? { approvalStatus: nextApprovalStatus } : {}),
       },
     });

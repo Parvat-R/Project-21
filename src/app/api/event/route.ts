@@ -3,28 +3,11 @@ import  prisma  from "@/lib/prisma";
 import { eventSchema } from "@/lib/validation/event";
 import { Role } from "@/app/generated/prisma/browser";
 
-function parseBase64Image(imageData?: string) {
-  if (!imageData) return null;
-
-  const rawBase64 = imageData.startsWith("data:")
-    ? imageData.split(",")[1]
-    : imageData;
-
-  if (!rawBase64) return null;
-
-  try {
-    return Buffer.from(rawBase64, "base64");
-  } catch {
-    return null;
-  }
-}
-
 // GET /api/event -> returns events with optional filters
 // Query params:
 // - creatorId: string
 // - visibility: INTERNAL | PUBLIC
 // - approvalStatus: PENDING | APPROVED | REJECTED
-// - includeImage: true | false (default false)
 // - take: number (default 50, max 100)
 // - skip: number (default 0)
 export async function GET(req: Request) {
@@ -34,8 +17,6 @@ export async function GET(req: Request) {
     const creatorId = searchParams.get("creatorId") ?? undefined;
     const visibility = searchParams.get("visibility") as "INTERNAL" | "PUBLIC" | null;
     const approvalStatus = searchParams.get("approvalStatus") as "PENDING" | "APPROVED" | "REJECTED" | null;
-    const includeImage = searchParams.get("includeImage") === "true";
-
     const parsedTake = Number(searchParams.get("take") ?? 50);
     const parsedSkip = Number(searchParams.get("skip") ?? 0);
     const take = Number.isFinite(parsedTake) ? Math.min(Math.max(parsedTake, 1), 100) : 50;
@@ -59,7 +40,7 @@ export async function GET(req: Request) {
         seats: true,
         approvalStatus: true,
         createdOn: true,
-        ...(includeImage ? { imageData: true } : {}),
+        imageUrl: true,
       },
       orderBy: { createdOn: "desc" },
       take,
@@ -76,7 +57,6 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
     const validatedData = eventSchema.parse(body);
-    const imageBuffer = parseBase64Image(validatedData.imageData);
 
     const user = await prisma.user.findUnique({ where: { id: validatedData.creatorId } });
     if (!user) {
@@ -98,7 +78,7 @@ export async function POST(req: Request) {
         visibility: validatedData.visibility,
         creatorId: validatedData.creatorId,
         description: validatedData.description ?? "",
-        imageData: imageBuffer,
+        imageUrl: validatedData.imageUrl?.trim() || null,
       },
     });
 
