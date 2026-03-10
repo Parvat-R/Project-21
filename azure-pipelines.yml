@@ -53,7 +53,7 @@ stages:
         repository: $(imageRepository)
         dockerfile: $(dockerfilePath)
         containerRegistry: $(dockerRegistryServiceConnection)
-        arguments: --build-arg DATABASE_URL=$(DATABASE_URL) MAIL_HOST=$(MAIL_HOST) MAIL_USER=$(MAIL_USER) MAIL_PASS=$(MAIL_PASS) 
+        arguments: --build-arg DATABASE_URL=$(DATABASE_URL) --build-arg MAIL_HOST=$(MAIL_HOST) --build-arg MAIL_USER=$(MAIL_USER)  --build-arg MAIL_PASS=$(MAIL_PASS) 
         tags: |
           $(tag)
 
