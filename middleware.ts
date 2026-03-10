@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
+export const runtime = "nodejs";
 const ALLOWED_ORIGIN = process.env.FRONTEND_URL || ""; // must be set in backend runtime
 
 console.log("Allowed Origins: ", ALLOWED_ORIGIN)
