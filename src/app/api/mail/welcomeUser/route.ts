@@ -19,7 +19,7 @@ export async function POST(req: Request) {
 
     const info = await mailSender({
       email,
-      title: "Welcome to EventHub ",
+      title: "Welcome to JEVENT ",
       body,
     });
 
