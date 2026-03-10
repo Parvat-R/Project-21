@@ -2,7 +2,7 @@ import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
 // GET /api/register/user/[id] - Get all registrations for a user
-export async function GET(req:Request,{ params }: { params: { id: string } }) {
+export async function GET(req:Request,{ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params
     console.log(id)
 
