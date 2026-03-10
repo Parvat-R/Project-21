@@ -33,7 +33,7 @@ stages:
     pool:
       name: project-21-backend-pool
     steps:
-    - script: docker system prune -a -f
+    # - script: docker system prune -a -f
 
     - task: AzureKeyVault@2
       inputs:
@@ -53,8 +53,13 @@ stages:
         command: build
         repository: $(imageRepository)
         dockerfile: $(dockerfilePath)
-        containerRegistry: $(dockerRegistryServiceConnection)
-        arguments: --build-arg DATABASE_URL=$(DATABASE_URL) --build-arg FRONTEND_URL=$(FRONTEND_URL) --build-arg MAIL_HOST=$(MAIL_HOST) --build-arg MAIL_USER=$(MAIL_USER)  --build-arg MAIL_PASS=$(MAIL_PASS) 
+        containerRegistry: $(dockerRegistryServiceConnection)        
+        arguments: >
+          --build-arg DATABASE_URL=$(DATABASE_URL)
+          --build-arg FRONTEND_URL=$(FRONTEND_URL)
+          --build-arg MAIL_HOST=$(MAIL_HOST)
+          --build-arg MAIL_USER=$(MAIL_USER)
+          --build-arg MAIL_PASS=$(MAIL_PASS)
         tags: |
           $(tag)
 
