@@ -2,7 +2,7 @@ import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
 // GET /api/register/[id] - Get a specific registration by ID
-export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function GET(req: Request, { params }: {params: Promise<{ id: string }>}) {
     const { id } = await params;
 
     try {

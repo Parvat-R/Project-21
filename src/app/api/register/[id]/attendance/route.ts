@@ -8,7 +8,7 @@ const AttendanceSchema = z.object({
 
 // PUT /api/register/[id]/attendance - Toggle attendance for a registration
 // body: { attendance: boolean }
-export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function PUT(req: Request, { params }: {params: Promise<{ id: string }>}) {
     const { id } = await params;
 
     try {
