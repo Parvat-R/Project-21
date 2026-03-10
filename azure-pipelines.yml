@@ -31,8 +31,17 @@ stages:
     steps:
     - script: docker system prune -a -f
 
+    - task: AzureKeyVault@2
+      inputs:
+        azureSubscription: 'Azure subscription 1(0839a5ee-329a-4b35-82c1-7c70e55542eb)'
+        KeyVaultName: 'project-21-key-vault'
+        SecretsFilter: '*'
+        RunAsPreJob: true
+
     - task: Docker@2
       displayName: Build image
+      env:
+        DATABASE_URL: $(DATABASEURL)
       inputs:
         command: build
         repository: $(imageRepository)
