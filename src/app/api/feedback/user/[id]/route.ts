@@ -3,10 +3,10 @@ import prisma from "@/lib/prisma";
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: Promise<{ id: string }> } // 1. Wrap in Promise
+  { params }: { params: Promise<{ id: string }> } 
 ) {
   try {
-    const { id: userId } = await params; // 2. Await the params
+    const { id: userId } = await params; 
 
     const feedbacks = await prisma.feedback.findMany({
       where: {

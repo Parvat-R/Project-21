@@ -46,12 +46,12 @@ enum ModStatus {
 
 model User {
   id            String    @id @default(cuid())
-  name          String?
-  email         String?   @unique
+  name          String
+  email         String   @unique
   emailVerified DateTime?
   image         String?
 
-  password      String?  
+  password      String
 
   role          Role      @default(USER)
   dateOfJoin    DateTime  @default(now())
@@ -61,42 +61,42 @@ model User {
   registrations Registration[]
   payments      Payment[]
 
-  accounts      Account[]
-  sessions      Session[]
+  // accounts      Account[]
+  // sessions      Session[]
 
   @@map("users")
 }
 
-model Account {
-  id                 String  @id @default(cuid())
-  userId             String
-  type               String
-  provider           String
-  providerAccountId  String
-  refresh_token      String?
-  access_token       String?
-  expires_at         Int?
-  token_type         String?
-  scope              String?
-  id_token           String?
-  session_state      String?
+// model Account {
+//   id                 String  @id @default(cuid())
+//   userId             String
+//   type               String
+//   provider           String
+//   providerAccountId  String
+//   refresh_token      String?
+//   access_token       String?
+//   expires_at         Int?
+//   token_type         String?
+//   scope              String?
+//   id_token           String?
+//   session_state      String?
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+//   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([provider, providerAccountId])
-  @@map("accounts")
+//   @@unique([provider, providerAccountId])
+//   @@map("accounts")
 
-}
+// }
 
-model Session {
-  id           String   @id @default(cuid())
-  sessionToken String   @unique
-  userId       String
-  expires      DateTime
+// model Session {
+//   id           String   @id @default(cuid())
+//   sessionToken String   @unique
+//   userId       String
+//   expires      DateTime
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  @@map("sessions")
-}
+//   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+//   @@map("sessions")
+// }
 
 model Event {
   id             String         @id @default(cuid())
@@ -108,7 +108,7 @@ model Event {
   createdOn      DateTime       @default(now())
   startDatetime  DateTime
   endDatetime    DateTime
-  imageData      Bytes?
+  imageUrl       String?
   seats          Int
   amount         Decimal        @db.Decimal(10, 2)
   visibility     Visibility     @default(PUBLIC)
