@@ -41,7 +41,7 @@ export async function POST(req: Request) {
         role: existingUser.role,
         name: existingUser.name,
       },
-      process.env.JWT_SECRET!,
+      process.env.JWT_TOKEN || 'default secret',
       { expiresIn: "3d" },
     );
 
