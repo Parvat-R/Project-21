@@ -14,16 +14,23 @@ export async function POST(req: NextRequest) {
     const { registrationId, description, stars } = body;
     console.log("==Received feedback data:", { registrationId, description, stars });  
 
-    const newFeedback = await prisma.feedback.create({
-      data: {
-        registrationId,
+    const feedbackData = {
+      registrationId,
+      description,
+      stars,
+    };
+
+    const updatedFeedback = await prisma.feedback.upsert({
+      where: { registrationId },
+      update: {
         description,
         stars,
       },
+      create: feedbackData,
     });
   
     return NextResponse.json(
-      { success: true, data: newFeedback },
+      { success: true, data: updatedFeedback },
       { status: 201 }
     );
     
