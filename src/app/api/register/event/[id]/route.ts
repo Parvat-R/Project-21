@@ -45,6 +45,10 @@ export async function POST(request: Request, { params }: {params: Promise<{ id: 
             return NextResponse.json({ message: "Event not found", acknowledgement: false }, { status: 404 });
         }
 
+        if (event.creatorId === userId) {
+            return NextResponse.json({ message: "You cannot register for your own event", acknowledgement: false }, { status: 403 });
+        }
+
         const alreadyRegistered = await prisma.registration.findFirst({
             where: { userId, eventId },
         });
