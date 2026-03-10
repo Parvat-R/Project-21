@@ -1,30 +1,22 @@
-// middleware.ts
+// middleware.ts (backend app)
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-/**
- * CORS configuration
- * - If you truly want allow-all with credentials, keep "*" and we'll reflect the Origin.
- * - For production, prefer explicit origins and remove "*".
- */
+// Configure exact allowed origins (no trailing slash)
 const RAW_ALLOWED = [
   process.env.FRONTEND_URL?.replace(/\/$/, "") || "",
-  // Add more allowed origins as needed:
+  // Add more origins as needed:
   // "http://localhost:3000",
-  "*", // remove in prod if you can
 ].filter(Boolean);
-
-const ALLOW_ALL = RAW_ALLOWED.includes("*");
-const ALLOWED_ORIGINS = RAW_ALLOWED.filter((o) => o !== "*");
 
 function isOriginAllowed(origin: string): boolean {
   if (!origin) return false;
   const normalized = origin.replace(/\/$/, "");
-  return ALLOW_ALL ? true : ALLOWED_ORIGINS.includes(normalized);
+  return RAW_ALLOWED.includes(normalized);
 }
 
 function applyCors(res: NextResponse, origin: string, req: NextRequest) {
-  // With credentials=true, ACAO cannot be "*"; reflect specific origin.
+  // Reflect origin; credentials require a specific origin (not "*")
   res.headers.set("Access-Control-Allow-Origin", origin);
   res.headers.set("Vary", "Origin");
   res.headers.set("Access-Control-Allow-Credentials", "true");
@@ -37,32 +29,26 @@ function applyCors(res: NextResponse, origin: string, req: NextRequest) {
     "Access-Control-Allow-Headers",
     reqHeaders || "Content-Type, Authorization, X-Requested-With, Accept, Origin"
   );
-  res.headers.set("Access-Control-Max-Age", "600"); // cache preflight 10 mins
+  res.headers.set("Access-Control-Max-Age", "600");
   return res;
 }
 
 export function middleware(req: NextRequest) {
   const origin = req.headers.get("origin") || "";
   const isPreflight = req.method === "OPTIONS";
-
-  // Fail closed only if nothing is configured at all (no "*" and no concrete origins)
-  if (!ALLOW_ALL && ALLOWED_ORIGINS.length === 0) {
-    return new NextResponse(
-      JSON.stringify({ error: "CORS misconfigured: no allowed origins configured" }),
-      { status: 403, headers: { "Content-Type": "application/json" } }
-    );
-  }
-
   const allowed = isOriginAllowed(origin);
 
-  // Handle preflight
+  // For preflight: return 204 and headers for allowed origins
   if (isPreflight) {
-    if (!allowed) return new NextResponse(null, { status: 403 });
+    if (!allowed) {
+      // Respond 204 without ACAO; browser will block later request
+      return new NextResponse(null, { status: 204 });
+    }
     const res = new NextResponse(null, { status: 204 });
     return applyCors(res, origin, req);
   }
 
-  // Simple requests
+  // For non-preflight: block early if origin is present and not allowed
   if (origin && !allowed) {
     return new NextResponse(
       JSON.stringify({ error: "CORS: origin not allowed" }),
@@ -70,14 +56,14 @@ export function middleware(req: NextRequest) {
     );
   }
 
-  // Pass through and attach CORS headers for allowed cross-origin requests
+  // Pass through, add CORS headers if allowed
   const res = NextResponse.next();
   if (origin && allowed) applyCors(res, origin, req);
   return res;
 }
 
-// Run for /api and all subpaths; use Node runtime (experimental in canary)
+// Ensure it covers your backend API paths
 export const config = {
   matcher: ["/api/:path*"],
-  runtime: "nodejs", // <<< requires Next.js 15.2 canary + experimental flag
+  // Do not set runtime: middleware is Edge by default, which is stable
 };
