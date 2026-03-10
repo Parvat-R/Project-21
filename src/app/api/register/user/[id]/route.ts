@@ -10,6 +10,10 @@ export async function GET(req:Request,{ params }: {params: Promise<{ id: string 
 
         const registration = await prisma.registration.findMany({
             where: { userId : id },
+            include: { 
+              event: true,
+              feedback: true
+            }
         });
 
         console.log(registration)
