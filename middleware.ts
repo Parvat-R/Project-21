@@ -19,11 +19,11 @@ function setCorsHeaders(res: NextResponse, origin: string | null) {
   res.headers.set("Access-Control-Allow-Credentials", "true");
   res.headers.set(
     "Access-Control-Allow-Methods",
-    "GET, POST, PUT, DELETE, OPTIONS",
+    "GET, POST, PUT, PATCH, DELETE, OPTIONS",
   );
   res.headers.set(
     "Access-Control-Allow-Headers",
-    "Content-Type, Authorization, X-Requested-With",
+    "Content-Type, Authorization, authorization, X-Requested-With, Accept, Origin",
   );
   return res;
 }
